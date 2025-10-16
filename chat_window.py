@@ -17,6 +17,8 @@ import threading
 import time
 import sys
 import traceback
+from chatalogue import process_user_input
+import os
 
 # --- simple preserved fallback if no backend_connector provided ---
 def fetch_bot_reply(user_message: str) -> str:
@@ -24,7 +26,7 @@ def fetch_bot_reply(user_message: str) -> str:
 
 # Try to import backend hook (preferred). If not present, fallback to fetch_bot_reply.
 try:
-    from backend_model import process_user_input  
+    from chatalogue import process_user_input  
     BACKEND_CALL = process_user_input
 except Exception:
     BACKEND_CALL = fetch_bot_reply
@@ -261,7 +263,7 @@ class ChatApp(tk.Tk):
         self.header = tk.Canvas(self, height=self.header_h, highlightthickness=0, bg=self["bg"])
         self.header.pack(fill=tk.X, side=tk.TOP)
         draw_gradient_rect(self.header, 0, 0, 3000, self.header_h, "#C41E3A", "#F24C4C", steps=80, horizontal=True)
-        self.header.create_text(18, self.header_h//2, text="📚 BU Guide — Your Smart Campus Assistant 🚀",
+        self.header.create_text(18, self.header_h//2, text="📚 Chatalogue — Your Smart Campus Assistant 🚀",
                                 anchor='w', fill="#F2C94C", font=(self.pref_font, 14, "bold"))
 
         # header buttons frame
@@ -297,7 +299,7 @@ class ChatApp(tk.Tk):
 
         # history and welcome
         self.history = []
-        self._welcome_text = "👋 Welcome to BU Guide — your campus companion! Ask me about courses, campus life, or support."
+        self._welcome_text = "👋 Welcome to Chatalogue — your campus companion! Ask me about courses, campus life, or support."
         self.add_bot(self._welcome_text)
 
         # auto focus input
@@ -484,7 +486,7 @@ class ChatApp(tk.Tk):
         # show typing bubble while backend processes
         typing_wrap = tk.Frame(self.chat_frame, bg="#F8F9FA")
         typing_wrap.pack(fill=tk.X, pady=4, anchor='w', padx=8)
-        typing_bubble = ChatBubble(typing_wrap, text="🤖 Chatalouge  is processing your query...", sender='bot', ts=now_ts(), max_width_pct=0.65)
+        typing_bubble = ChatBubble(typing_wrap, text="🤖  Chatalouge is typing", sender='bot', ts=now_ts(), max_width_pct=0.65)
         typing_bubble.pack(anchor='w', padx=(4, 40))
 
         stop_flag = {"stop": False}
@@ -494,10 +496,11 @@ class ChatApp(tk.Tk):
                     if stop_flag["stop"]:
                         break
                     try:
-                        typing_bubble.canvas.delete("typing_text")
-                        typing_bubble.canvas.create_text(16, 12, text=f"🤖  Chatalouge is typing{'.'*n}",
-                                                        font=typing_bubble.body_font, fill=typing_bubble.text_dark,
-                                                        width=int(self.winfo_width()*0.65), anchor='nw', tags="typing_text")
+                        #typing_bubble.canvas.delete("typing_text")
+                        #typing_bubble.canvas.create_text(16, 12, text=f"🤖  Chatalouge is typing{'.'*n}",
+                        #                               font=typing_bubble.body_font, fill=typing_bubble.text_dark,
+                        #                               width=int(self.winfo_width()*0.65), anchor='nw', tags="typing_text")
+                        pass
                     except:
                         pass
                     time.sleep(0.5)
