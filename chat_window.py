@@ -1,12 +1,10 @@
 # chat_window.py
 """
-BU Guide Chatbot - Final Production Version
-- Fully responsive UI with gradient header
-- Left/right aligned chat bubbles
-- Auto-scroll and "scroll to bottom" arrow
-- Copy, Save, Clear chat options
-- Typing bubble
-- Backend integrated with backend_model.py (process_message)
+BU Guide Chatbot - Final Production Version (review-aligned)
+  - Header: robot emoji + title only (no extra emojis/icons or dash)
+  - Header buttons moved slightly left so they appear fully inside the header
+  - Send button anchored to the far right of the input area 
+  - Got rid of hands and dash.
 """
 
 import tkinter as tk
@@ -21,18 +19,6 @@ import traceback
 import chatalogue as chatalogue
 from chatalogue import process_user_input
 import os
-
-# # --- simple preserved fallback if no backend_connector provided ---
-# def fetch_bot_reply(user_message: str) -> str:
-#     return "Bot reply: " + user_message
-#
-# # Try to import backend hook (preferred). If not present, fallback to fetch_bot_reply.
-# try:
-#     from chatalogue import process_user_input
-#     BACKEND_CALL = process_user_input
-# except Exception:
-#     BACKEND_CALL = fetch_bot_reply
-
 
 # ---------- Utilities ----------
 def now_ts():
@@ -249,7 +235,7 @@ class ChatBubble(tk.Frame):
 class ChatApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("📚 Chatalouge — Your Smart Campus Assistant")
+        self.title("Chatalogue — Your Smart Campus Assistant")
         # default window (no forced global fullscreen/shortcuts removed)
         try:
             self.state("zoomed")
@@ -265,10 +251,12 @@ class ChatApp(tk.Tk):
         self.header = tk.Canvas(self, height=self.header_h, highlightthickness=0, bg=self["bg"])
         self.header.pack(fill=tk.X, side=tk.TOP)
         draw_gradient_rect(self.header, 0, 0, 3000, self.header_h, "#C41E3A", "#F24C4C", steps=80, horizontal=True)
-        self.header.create_text(18, self.header_h//2, text="📚 Chatalogue — Your Smart Campus Assistant 🚀",
-                                anchor='w', fill="#F2C94C", font=(self.pref_font, 14, "bold"))
 
-        # header buttons frame
+        # --- REVIEW CHANGE: Header title replaced with robot emoji + title only 
+        # Title and buttons will be positioned responsively by _build_header_buttons()
+        # header_title placeholder removed in favor of left title widget + right buttons
+
+        # header buttons frame (and title) are built here
         self._build_header_buttons()
 
         # main + right scrollbar
@@ -301,7 +289,7 @@ class ChatApp(tk.Tk):
 
         # history and welcome
         self.history = []
-        self._welcome_text = "👋 Welcome to Chatalogue — your campus companion! Ask me about courses, campus life, or support."
+        self._welcome_text = " Welcome to Chatalogue, your campus companion! Ask me about courses, campus life, or support."
         self.add_bot(self._welcome_text)
 
         # auto focus input
@@ -320,7 +308,13 @@ class ChatApp(tk.Tk):
         return next((f for f in pref if f in avail), "Segoe UI")
 
     def _build_header_buttons(self):
-        self.btn_frame = tk.Frame(self, bg='', padx=6, pady=6)
+        # create left title label widget (so it can be repositioned dynamically)
+        title_text = "🤖 Chatalogue Your Smart Campus Assistant"
+        self._hdr_title = tk.Label(self.header, text=title_text,
+                                   fg="#F2C94C", bg=self.header["bg"],
+                                   font=(self.pref_font, 14, "bold"))
+        # create button frame (right side)
+        self.btn_frame = tk.Frame(self.header, bg=self.header["bg"], padx=6, pady=6)
         copy_btn = tk.Button(self.btn_frame, text="📋 Copy", bg="#F2C94C", fg="#111", bd=0, padx=8, cursor="hand2", command=self.copy_all)
         copy_btn.pack(side=tk.LEFT, padx=6)
         copy_btn.configure(width=12, anchor="center")
@@ -343,12 +337,40 @@ class ChatApp(tk.Tk):
             btn.bind("<Enter>", lambda e, b=btn: b.config(relief='raised'))
             btn.bind("<Leave>", lambda e, b=btn: b.config(relief='flat'))
 
+        # initial placement - use current window width if available
         try:
+            win_w = self.winfo_width() or self.winfo_screenwidth()
+        except:
             win_w = self.winfo_screenwidth()
-            x = win_w - 320
-            self.header.create_window(x, self.header_h//2, window=self.btn_frame, anchor='w', tags="hdr_btns")
-        except Exception:
-            self.header.create_window(1100, self.header_h//2, window=self.btn_frame, anchor='w', tags="hdr_btns")
+
+        left_padding = 18
+        right_padding = 18
+        # place title (left) and buttons (right) onto header canvas using create_window
+        try:
+            if self._hdr_title_win:
+                self.header.delete(self._hdr_title_win)
+            if self._hdr_btn_win:
+                self.header.delete(self._hdr_btn_win)
+        except:
+            pass
+
+        # Title anchored to left
+        self._hdr_title_win = self.header.create_window(left_padding, self.header_h // 2,
+                                                         window=self._hdr_title, anchor='w', tags="hdr_title")
+
+        # Buttons anchored to right (with padding)
+        self._hdr_btn_win = self.header.create_window(win_w - right_padding, self.header_h // 2,
+                                                      window=self.btn_frame, anchor='e', tags="hdr_buttons")
+
+        # small responsive tweak: reduce title font slightly on narrow windows
+        try:
+            if win_w < 1000:
+                fs = 12
+            else:
+                fs = 14
+            self._hdr_title.config(font=(self.pref_font, fs, "bold"))
+        except:
+            pass
 
     def _show_btn_tooltip(self, event, text):
         self._hide_btn_tooltip()
@@ -375,13 +397,16 @@ class ChatApp(tk.Tk):
         self.input_bg = tk.Canvas(self.input_area, bg="#2C2C2C", height=64, highlightthickness=0)
         self.input_bg.pack(fill=tk.X, padx=18)
         self.input_bg.bind("<Configure>", lambda e: self._draw_input_bg())
+
         self.user_input = tk.Text(self.input_area, height=1, wrap='word', font=(self.pref_font, 14), bg="#222222", fg="white", bd=0, padx=12, pady=10, insertbackground='white')
         self.user_input.place(in_=self.input_bg, x=12, y=8, relwidth=0.78, height=48)
         # maintain enter->send behavior
         self.user_input.bind("<Return>", self._on_enter)
         self.user_input.bind("<Shift-Return>", self._insert_newline)
+        # ensure send button stays at the far right of the input area (review requested)
         self.send_btn = tk.Button(self.input_area, text="📤  Send", bg="#C41E3A", fg="white", bd=0, padx=12, cursor="hand2", command=self.on_send)
-        self.send_btn.place(in_=self.input_bg, relx=0.82, x=0, y=8, width=140, height=48)
+        # place at far right of input_bg (keeps it on the right when window resizes)
+        self.send_btn.place(in_=self.input_bg, relx=0.86, x=0, y=8, width=140, height=48)
         self.send_btn.bind("<Enter>", lambda e: self.send_btn.config(relief='raised'))
         self.send_btn.bind("<Leave>", lambda e: self.send_btn.config(relief='flat'))
 
@@ -398,16 +423,46 @@ class ChatApp(tk.Tk):
         height_avail = max(300, self.winfo_height() - self.header_h - 180)
         self.center_container.config(width=cont_w, height=height_avail)
         self.chat_canvas.config(width=cont_w, height=height_avail)
+
+        # reposition header widgets so title stays left and buttons stay right
         try:
-            self.header.delete("hdr_btns")
-        except:
-            pass
-        try:
-            x = self.winfo_width() - 320
-            self.header.create_window(x, self.header_h//2, window=self.btn_frame, anchor='w', tags="hdr_btns")
-        except:
-            pass
+            # delete previous window items (safe)
+            try:
+                if self._hdr_title_win:
+                    self.header.delete(self._hdr_title_win)
+            except:
+                pass
+            try:
+                if self._hdr_btn_win:
+                    self.header.delete(self._hdr_btn_win)
+            except:
+                pass
+
+            left_padding = 18
+            right_padding = 18
+            # adjust font size responsively
+            if win_w < 900:
+                fs = 12
+            elif win_w < 1200:
+                fs = 13
+            else:
+                fs = 14
+            self._hdr_title.config(font=(self.pref_font, fs, "bold"))
+
+            # create new placements
+            self._hdr_title_win = self.header.create_window(left_padding, self.header_h // 2,
+                                                             window=self._hdr_title, anchor='w', tags="hdr_title")
+            self._hdr_btn_win = self.header.create_window(win_w - right_padding, self.header_h // 2,
+                                                          window=self.btn_frame, anchor='e', tags="hdr_buttons")
+        except Exception:
+            # fallback: place buttons near center-right to avoid crash
+            try:
+                self.header.create_window(max(700, win_w//2 + 300), self.header_h // 2, window=self.btn_frame, anchor='w', tags="hdr_buttons")
+            except:
+                pass
+
         self._on_chat_frame_configure()
+
 
     def _on_mousewheel(self, ev):
         try:
@@ -488,7 +543,7 @@ class ChatApp(tk.Tk):
         # show typing bubble while backend processes
         typing_wrap = tk.Frame(self.chat_frame, bg="#F8F9FA")
         typing_wrap.pack(fill=tk.X, pady=4, anchor='w', padx=8)
-        typing_bubble = ChatBubble(typing_wrap, text="🤖  Chatalouge is typing", sender='bot', ts=now_ts(), max_width_pct=0.65)
+        typing_bubble = ChatBubble(typing_wrap, text="🤖  Chatalogue is typing", sender='bot', ts=now_ts(), max_width_pct=0.65)
         typing_bubble.pack(anchor='w', padx=(4, 40))
 
         stop_flag = {"stop": False}
@@ -498,10 +553,6 @@ class ChatApp(tk.Tk):
                     if stop_flag["stop"]:
                         break
                     try:
-                        #typing_bubble.canvas.delete("typing_text")
-                        #typing_bubble.canvas.create_text(16, 12, text=f"🤖  Chatalouge is typing{'.'*n}",
-                        #                               font=typing_bubble.body_font, fill=typing_bubble.text_dark,
-                        #                               width=int(self.winfo_width()*0.65), anchor='nw', tags="typing_text")
                         pass
                     except:
                         pass
@@ -511,7 +562,6 @@ class ChatApp(tk.Tk):
 
         def call_backend(m):
             try:
-                # call the backend connector (should return a string)
                 reply = chatalogue.chat_loop(m)
             except Exception:
                 reply = Exception
