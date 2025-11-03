@@ -1,6 +1,6 @@
-# 🎓 UNIGUIDE — University Chatbot Assistant
+# 🎓 Chatalogue — University Chatbot Assistant
 
-UNIGUIDE is a lightweight, student-focused chatbot that helps users retrieve university-related information (class times, days, instructor names, room numbers, upcoming exams/events, and simple alerts) through a friendly chat interface. The project is designed primarily to run locally using a SQLite database and a Tkinter GUI.
+Chatalogue is a lightweight, student-focused chatbot that helps users retrieve university-related information (class times, days, instructor names, room numbers, upcoming exams/events, and simple alerts) through a friendly chat interface. The project is designed primarily to run locally using a SQLite database and a Tkinter GUI.
 
 ---
 
@@ -50,8 +50,8 @@ UNIGUIDE is a lightweight, student-focused chatbot that helps users retrieve uni
 Clone your fork (recommended — you are the main contributor):
 ```bash
 git clone 
-https://github.com/artisticdrake/UNIGUIDE.git
-cd UNIGUIDE
+https://github.com/artisticdrake/Chatalogue.git
+cd Chatalogue
 ```
 
 Then:
@@ -84,7 +84,7 @@ Then:
 ## 💬 Example conversation
 
 You: What classes do I have on Tuesday?  
-UNIGUIDE: Software Engineering — Prof. Bora — Tue 18:00-20:45 — Room 204A
+Chatalogue: Software Engineering — Prof. Bora — Tue 18:00-20:45 — Room 204A
 
 (Exact output depends on the actual content of `chatalogue.sqlite`.)
 
@@ -92,7 +92,7 @@ UNIGUIDE: Software Engineering — Prof. Bora — Tue 18:00-20:45 — Room 204A
 
 ## 🛠 Development notes
 
-- The supported and intended entrypoint for this repository is the combination of `chat_window.py` (frontend) and `chatalogue.py` (backend). There are no references to alternate UNIGUIDE variant files in this README.
+- The supported and intended entrypoint for this repository is the combination of `chat_window.py` (frontend) and `chatalogue.py` (backend). There are no references to alternate Chatalogue variant files in this README.
 - If you modify the DB schema, update `chatalogue.py` helpers accordingly.
 - For reproducible onboarding, consider adding a `seed_db.py` or migration script that populates `chatalogue.sqlite` with a `session_info.session_uuid` and example rows.
 
@@ -100,4 +100,4 @@ UNIGUIDE: Software Engineering — Prof. Bora — Tue 18:00-20:45 — Room 204A
 
 ## 👨‍🎓 Author & Contributors
 
-Repository and project content are maintained by the UNIGUIDE contributors.
+Repository and project content are maintained by the Chatalogue contributors.
