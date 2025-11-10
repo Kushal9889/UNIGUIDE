@@ -69,7 +69,7 @@ def scrape(url):
         all_rows.extend(rows)
 
     print(f"[INFO] Found {len(all_rows)} rows")
-    return all_rows
+    save_sqlite(all_rows)
 
 def save_sqlite(rows, db_path=DB_PATH):
     con = sqlite3.connect(db_path)
@@ -89,8 +89,9 @@ def save_sqlite(rows, db_path=DB_PATH):
     print(f"[DONE] Saved to {db_path}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print('Usage: python bu_course_scraper.py "https://www.bu.edu/met/degrees-certificates/bs-computer-science/"')
-        sys.exit(1)
-    data = scrape(sys.argv[1])
-    save_sqlite(data)
+    # if len(sys.argv) != 2:
+    #     print('Usage: python bu_course_scraper.py "https://www.bu.edu/met/degrees-certificates/bs-computer-science/"')
+    #     sys.exit(1)
+    url = "https://www.bu.edu/met/degrees-certificates/bs-computer-science/"
+    data = scrape(url)
+    # save_sqlite(data)
